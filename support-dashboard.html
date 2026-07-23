@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NordPunkt IT — Support Dashboard (Demo)</title>
+<meta name="description" content="Portfolio-Demo: interaktives IT-Support-Dashboard mit Ticket-Queue und System-Monitoring.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220; --panel:#111A2C; --panel2:#16213A; --line:#25334A;
+    --cyan:#38BDF8; --green:#34D399; --amber:#FBBF24; --red:#F87171;
+    --text:#E7ECF2; --muted:#7C8DA6;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .panel{background:var(--panel); border:1px solid var(--line);}
+  .panel2{background:var(--panel2); border:1px solid var(--line);}
+  .label{font-family:'IBM Plex Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-size:.68rem;}
+  .dot{width:7px;height:7px;border-radius:999px;display:inline-block;}
+  .dot-green{background:var(--green); box-shadow:0 0 0 3px rgba(52,211,153,.15);}
+  .dot-amber{background:var(--amber); box-shadow:0 0 0 3px rgba(251,191,36,.15);}
+  .dot-red{background:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.15);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .live{animation:pulse 2s ease-in-out infinite;}
+  @media (prefers-reduced-motion: reduce){ .live{animation:none;} }
+  .filter-btn{transition:all .15s ease;}
+  .filter-btn.active{background:var(--cyan); color:#06121F; font-weight:600;}
+  tr.ticket-row{transition:background .12s ease;}
+  tr.ticket-row:hover{background:var(--panel2);}
+  ::-webkit-scrollbar{height:8px; width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- TOPBAR -->
+<header class="border-b sticky top-0 z-40 backdrop-blur bg-[#0B1220]/90" style="border-color:var(--line);">
+  <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <span class="dot dot-green live"></span>
+      <span class="mono text-sm font-semibold">NordPunkt<span style="color:var(--muted)">IT</span></span>
+      <span class="mono text-[10px] px-1.5 py-0.5 rounded-sm ml-1" style="background:var(--panel2); color:var(--muted); border:1px solid var(--line);">DEMO</span>
+    </div>
+    <div class="hidden sm:flex items-center gap-1 flex-1 max-w-xs">
+      <input type="text" id="searchInput" placeholder="Tickets durchsuchen…"
+        class="w-full bg-transparent border rounded-sm px-3 py-1.5 text-sm mono focus:outline-none"
+        style="border-color:var(--line); color:var(--text);" oninput="renderTickets()">
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="mono text-xs hidden sm:block" style="color:var(--muted);" id="clock"></span>
+      <button class="mono text-xs px-3 py-1.5 rounded-sm" style="background:var(--cyan); color:#06121F; font-weight:600;">+ Neues Ticket</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-5 py-8">
+
+  <!-- STATS -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-px mb-8" style="background:var(--line);">
+    <div class="panel2 p-4">
+      <p class="label mb-1">offene tickets</p>
+      <p class="mono text-2xl font-semibold" id="statOpen">—</p>
+    </div>
+    <div class="panel2 p-4">
+      <p class="label mb-1">ø reaktionszeit</p>
+      <p class="mono text-2xl font-semibold">14 min</p>
+    </div>
+    <div class="panel2 p-4">
+      <p class="label mb-1">sla-erfüllung</p>
+      <p class="mono text-2xl font-semibold" style="color:var(--green);">96,2%</p>
+    </div>
+    <div class="panel2 p-4">
+      <p class="label mb-1">system-uptime</p>
+      <p class="mono text-2xl font-semibold" style="color:var(--green);">99,8%</p>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6">
+
+    <!-- TICKET QUEUE -->
+    <div class="lg:col-span-2 panel rounded-sm p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="dot dot-green"></span>
+          <p class="label">ticket-queue</p>
+        </div>
+        <div class="flex gap-1" id="filterBar">
+          <button class="filter-btn active mono text-xs px-2.5 py-1 rounded-sm border" style="border-color:var(--line);" data-filter="alle">Alle</button>
+          <button class="filter-btn mono text-xs px-2.5 py-1 rounded-sm border" style="border-color:var(--line);" data-filter="Neu">Neu</button>
+          <button class="filter-btn mono text-xs px-2.5 py-1 rounded-sm border" style="border-color:var(--line);" data-filter="In Bearbeitung">In Arbeit</button>
+          <button class="filter-btn mono text-xs px-2.5 py-1 rounded-sm border" style="border-color:var(--line);" data-filter="Gelöst">Gelöst</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left label border-b" style="border-color:var(--line);">
+              <th class="pb-2 pr-3">ID</th>
+              <th class="pb-2 pr-3">Betreff</th>
+              <th class="pb-2 pr-3">Priorität</th>
+              <th class="pb-2 pr-3">Status</th>
+              <th class="pb-2">Erstellt</th>
+            </tr>
+          </thead>
+          <tbody id="ticketBody"></tbody>
+        </table>
+      </div>
+      <p class="text-xs mt-4" style="color:var(--muted);" id="ticketCount"></p>
+    </div>
+
+    <!-- SYSTEM STATUS -->
+    <div class="panel rounded-sm p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="dot dot-green live"></span>
+        <p class="label">system-monitoring</p>
+      </div>
+      <div class="space-y-4" id="systemList"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="mt-10 panel2 rounded-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div>
+      <p class="mono text-xs mb-1" style="color:var(--cyan);">// Über diese Demo</p>
+      <p class="text-sm" style="color:var(--muted);">
+        Fiktives Support-Dashboard, gebaut als Portfolio-Projekt — HTML, Tailwind CSS und
+        Vanilla JavaScript, keine externen Frameworks. Ticket-Queue und Filter sind voll
+        funktional (Stichprobe aus 12 Demo-Tickets).
+      </p>
+    </div>
+    <div class="flex gap-2 shrink-0">
+      <a href="https://github.com/SalvaSeclen" target="_blank" rel="noopener" class="mono text-xs px-3 py-1.5 rounded-sm border" style="border-color:var(--line); color:var(--text);">GitHub</a>
+      <a href="mailto:salvaseclen@gmail.com" class="mono text-xs px-3 py-1.5 rounded-sm" style="background:var(--cyan); color:#06121F; font-weight:600;">Kontakt</a>
+    </div>
+  </div>
+
+  <p class="text-center mono text-xs mt-6" style="color:var(--muted);">
+    Demo-Projekt von Salvattore Seclen · Juli 2026
+  </p>
+
+</main>
+
+<script>
+  // ---- Uhr ----
+  function updateClock(){
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleDateString('de-DE') + '  ' + now.toLocaleTimeString('de-DE');
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ---- Demo-Daten ----
+  const tickets = [
+    { id:'#4821', subject:'Drucker im 2. OG offline', requester:'M. Bauer', priority:'Hoch', status:'Neu', created:'vor 6 min' },
+    { id:'#4820', subject:'Passwort-Reset Active Directory', requester:'S. Krüger', priority:'Mittel', status:'In Bearbeitung', created:'vor 22 min' },
+    { id:'#4819', subject:'VPN-Verbindung bricht ständig ab', requester:'T. Hoffmann', priority:'Hoch', status:'In Bearbeitung', created:'vor 41 min' },
+    { id:'#4818', subject:'Neues Notebook einrichten (Rollout)', requester:'J. Fischer', priority:'Niedrig', status:'Neu', created:'vor 1 Std' },
+    { id:'#4817', subject:'Outlook synchronisiert nicht', requester:'L. Wagner', priority:'Mittel', status:'Gelöst', created:'vor 2 Std' },
+    { id:'#4816', subject:'Monitor am Kiosk-Terminal schwarz', requester:'Facility Mgmt', priority:'Hoch', status:'Gelöst', created:'vor 3 Std' },
+    { id:'#4815', subject:'Zugriff auf Netzlaufwerk fehlt', requester:'A. Schuster', priority:'Mittel', status:'Neu', created:'vor 3 Std' },
+    { id:'#4814', subject:'Software-Rollout Buchhaltung', requester:'IT-Projekt', priority:'Niedrig', status:'In Bearbeitung', created:'vor 5 Std' },
+    { id:'#4813', subject:'Bildschirm flackert nach Update', requester:'R. Neumann', priority:'Niedrig', status:'Gelöst', created:'vor 6 Std' },
+    { id:'#4812', subject:'Telefonanlage: keine Wahltöne', requester:'Empfang', priority:'Hoch', status:'Gelöst', created:'vor 8 Std' },
+    { id:'#4811', subject:'Neuer Mitarbeiter — Account anlegen', requester:'HR', priority:'Mittel', status:'Neu', created:'vor 9 Std' },
+    { id:'#4810', subject:'Kiosk-System Standort Nord neu starten', requester:'Monitoring', priority:'Mittel', status:'Gelöst', created:'vor 11 Std' },
+  ];
+
+  const priorityColor = { 'Hoch':'var(--red)', 'Mittel':'var(--amber)', 'Niedrig':'var(--muted)' };
+  const statusDot = { 'Neu':'dot-amber', 'In Bearbeitung':'dot-green', 'Gelöst':'dot-green' };
+  const statusColor = { 'Neu':'var(--amber)', 'In Bearbeitung':'var(--cyan)', 'Gelöst':'var(--green)' };
+
+  let currentFilter = 'alle';
+
+  function renderTickets(){
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const body = document.getElementById('ticketBody');
+    const filtered = tickets.filter(t => {
+      const matchesFilter = currentFilter === 'alle' || t.status === currentFilter;
+      const matchesSearch = t.subject.toLowerCase().includes(search) || t.requester.toLowerCase().includes(search) || t.id.includes(search);
+      return matchesFilter && matchesSearch;
+    });
+
+    body.innerHTML = filtered.map(t => `
+      <tr class="ticket-row border-b" style="border-color:var(--line);">
+        <td class="py-2.5 pr-3 mono text-xs" style="color:var(--muted);">${t.id}</td>
+        <td class="py-2.5 pr-3">${t.subject}<br><span class="text-xs" style="color:var(--muted);">${t.requester}</span></td>
+        <td class="py-2.5 pr-3">
+          <span class="mono text-xs" style="color:${priorityColor[t.priority]};">${t.priority}</span>
+        </td>
+        <td class="py-2.5 pr-3">
+          <span class="dot ${statusDot[t.status]}"></span>
+          <span class="mono text-xs ml-1" style="color:${statusColor[t.status]};">${t.status}</span>
+        </td>
+        <td class="py-2.5 mono text-xs" style="color:var(--muted);">${t.created}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('ticketCount').textContent = `${filtered.length} von ${tickets.length} Tickets angezeigt`;
+    document.getElementById('statOpen').textContent = tickets.filter(t => t.status !== 'Gelöst').length;
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderTickets();
+    });
+  });
+
+  renderTickets();
+
+  // ---- System-Status ----
+  const systems = [
+    { name:'Active Directory', uptime:99.9, status:'green' },
+    { name:'E-Mail-Server (Exchange)', uptime:99.7, status:'green' },
+    { name:'VPN-Gateway', uptime:97.4, status:'amber' },
+    { name:'Kiosk-Netzwerk Nord', uptime:99.9, status:'green' },
+    { name:'Drucker-Cluster 2.OG', uptime:88.2, status:'red' },
+    { name:'Backup-Service (nächtlich)', uptime:100, status:'green' },
+  ];
+  const dotClass = { green:'dot-green', amber:'dot-amber', red:'dot-red' };
+  const barColor = { green:'var(--green)', amber:'var(--amber)', red:'var(--red)' };
+
+  document.getElementById('systemList').innerHTML = systems.map(s => `
+    <div>
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-xs flex items-center gap-1.5">
+          <span class="dot ${dotClass[s.status]} ${s.status==='red' ? 'live' : ''}"></span>
+          ${s.name}
+        </span>
+        <span class="mono text-xs" style="color:${barColor[s.status]};">${s.uptime}%</span>
+      </div>
+      <div class="w-full h-1.5 rounded-full" style="background:var(--line);">
+        <div class="h-1.5 rounded-full" style="width:${s.uptime}%; background:${barColor[s.status]};"></div>
+      </div>
+    </div>
+  `).join('');
+</script>
+
+</body>
+</html>

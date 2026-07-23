@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rollout-Checklisten-Generator — IT Onboarding</title>
+<meta name="description" content="Portfolio-Tool: generiert IT-Rollout- und Onboarding-Checklisten je nach Arbeitsplatz-Typ. Exportierbar als Markdown, druckbar.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F5; --panel:#FFFFFF; --grid:#D7E0EA; --line:#C7D2DE;
+    --ink:#1E3A5F; --ink-2:#2B6CB0; --orange:#D97706; --green:#15803D;
+    --text:#16233A; --muted:#5B6B82;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background-color:var(--bg);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .panel{background:var(--panel); border:1px solid var(--line);}
+  .label{font-family:'IBM Plex Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); font-size:.68rem;}
+  .code{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--muted); background:#EEF1F5; border:1px solid var(--line); padding:1px 6px; border-radius:3px;}
+  .btn-primary{background:var(--ink); color:#fff; transition:opacity .15s;}
+  .btn-primary:hover{opacity:.88;}
+  .btn-outline{border:1px solid var(--line); color:var(--ink); background:#fff; transition:background .15s;}
+  .btn-outline:hover{background:#F3F6F9;}
+  input[type="checkbox"]{
+    appearance:none; width:19px; height:19px; border:2px solid var(--ink-2);
+    border-radius:4px; display:inline-block; position:relative; cursor:pointer; flex-shrink:0;
+    background:#fff;
+  }
+  input[type="checkbox"]:checked{background:var(--green); border-color:var(--green);}
+  input[type="checkbox"]:checked::after{
+    content:"✓"; color:#fff; font-size:13px; font-weight:700; position:absolute;
+    top:50%; left:50%; transform:translate(-50%,-58%);
+  }
+  .item-done .item-text{ text-decoration:line-through; color:var(--muted); }
+  .progress-track{background:var(--grid); border:1px solid var(--line);}
+  select, input[type="text"], input[type="date"]{
+    background:#fff; border:1px solid var(--line); color:var(--text);
+  }
+  select:focus, input:focus, button:focus-visible{ outline:2px solid var(--ink-2); outline-offset:1px; }
+  @media print{
+    body{background:#fff !important;}
+    .no-print{display:none !important;}
+    .panel{border:1px solid #999 !important; box-shadow:none !important;}
+    .print-only{display:block !important;}
+  }
+  .print-only{display:none;}
+</style>
+</head>
+<body class="antialiased">
+
+<header class="no-print border-b" style="border-color:var(--line); background:rgba(255,255,255,.85); backdrop-filter:blur(6px);">
+  <div class="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="code">TOOL</span>
+      <span class="font-semibold">Rollout-Checklisten-Generator</span>
+    </div>
+    <div class="flex gap-2">
+      <a href="mailto:salvaseclen@gmail.com" class="mono text-xs px-3 py-1.5 rounded-sm btn-outline">Kontakt</a>
+      <a href="https://github.com/SalvaSeclen" target="_blank" rel="noopener" class="mono text-xs px-3 py-1.5 rounded-sm btn-outline">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-5 py-8">
+
+  <div class="no-print mb-6">
+    <p class="label mb-2">// über dieses tool</p>
+    <p class="text-sm max-w-2xl" style="color:var(--muted);">
+      Generiert eine vollständige Checkliste für IT-Rollout oder Mitarbeiter-Onboarding,
+      abhängig vom Arbeitsplatz-Typ — damit bei Hardware, Zugängen, Software und Sicherheit
+      nichts vergessen wird. Ergebnis als Markdown exportierbar oder direkt druckbar.
+    </p>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div class="panel rounded-sm p-5 mb-6 no-print">
+    <div class="grid sm:grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="label block mb-1.5">Arbeitsplatz-Typ</label>
+        <select id="scenarioSelect" class="w-full px-3 py-2 rounded-sm text-sm">
+          <option value="buero">Büro-Arbeitsplatz (Onboarding)</option>
+          <option value="homeoffice">Home-Office / Remote</option>
+          <option value="kiosk">Kiosk- / Digital-Signage-Standort</option>
+          <option value="filiale">Filial-Rollout (mehrere Geräte)</option>
+        </select>
+      </div>
+      <div>
+        <label class="label block mb-1.5">Name / Standort</label>
+        <input type="text" id="targetName" placeholder="z. B. M. Bauer / Filiale Nord" class="w-full px-3 py-2 rounded-sm text-sm">
+      </div>
+      <div>
+        <label class="label block mb-1.5">Verantwortlich</label>
+        <input type="text" id="responsible" placeholder="z. B. Salvattore Seclen" class="w-full px-3 py-2 rounded-sm text-sm">
+      </div>
+      <div>
+        <label class="label block mb-1.5">Datum</label>
+        <input type="date" id="dateField" class="w-full px-3 py-2 rounded-sm text-sm">
+      </div>
+    </div>
+    <button id="generateBtn" class="btn-primary mono text-sm px-4 py-2 rounded-sm w-full sm:w-auto">
+      Checkliste generieren →
+    </button>
+  </div>
+
+  <!-- PRINT HEADER -->
+  <div class="print-only mb-6">
+    <h1 class="text-xl font-bold" style="font-family:'Space Grotesk';">IT-Rollout-Checkliste</h1>
+    <p class="text-sm mt-1" id="printMeta"></p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="panel rounded-sm p-5 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <p class="label" id="scenarioTitle">// checkliste</p>
+      <p class="mono text-sm" id="progressText">0 / 0</p>
+    </div>
+    <div class="progress-track rounded-full h-2.5 overflow-hidden">
+      <div id="progressBar" class="h-2.5 rounded-full" style="width:0%; background:var(--green); transition:width .25s ease;"></div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="checklistContainer" class="space-y-4"></div>
+
+  <!-- ADD CUSTOM ITEM -->
+  <div class="panel rounded-sm p-5 mt-6 no-print">
+    <p class="label mb-3">// eigene aufgabe hinzufügen</p>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <select id="customCategory" class="px-3 py-2 rounded-sm text-sm sm:w-48">
+        <option>Hardware</option>
+        <option>Zugänge &amp; Accounts</option>
+        <option>Software</option>
+        <option>Netzwerk</option>
+        <option>Sicherheit</option>
+        <option>Übergabe &amp; Doku</option>
+      </select>
+      <input type="text" id="customText" placeholder="Aufgabenbeschreibung…" class="flex-1 px-3 py-2 rounded-sm text-sm">
+      <button id="addCustomBtn" class="btn-outline mono text-sm px-4 py-2 rounded-sm">+ Hinzufügen</button>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="flex flex-wrap gap-3 mt-6 no-print">
+    <button id="exportBtn" class="btn-primary mono text-sm px-5 py-2.5 rounded-sm">↓ Als Markdown exportieren</button>
+    <button id="printBtn" class="btn-outline mono text-sm px-5 py-2.5 rounded-sm">🖨 Drucken / Als PDF</button>
+    <button id="resetBtn" class="btn-outline mono text-sm px-5 py-2.5 rounded-sm ml-auto">↺ Zurücksetzen</button>
+  </div>
+
+  <p class="text-center mono text-xs mt-10 no-print" style="color:var(--muted);">
+    Portfolio-Tool von Salvattore Seclen · Juli 2026
+  </p>
+
+</main>
+
+<script>
+  const scenarios = {
+    buero: {
+      label: "Büro-Arbeitsplatz — Onboarding",
+      items: [
+        ["HW-01","Hardware","Notebook/PC vorbereitet und getestet"],
+        ["HW-02","Hardware","Monitor, Tastatur, Maus, Headset bereitgestellt"],
+        ["HW-03","Hardware","Diensthandy konfiguriert (falls zutreffend)"],
+        ["ACC-01","Zugänge & Accounts","Active-Directory-Konto angelegt"],
+        ["ACC-02","Zugänge & Accounts","E-Mail-Postfach eingerichtet"],
+        ["ACC-03","Zugänge & Accounts","Zugriffsrechte gemäß Abteilung vergeben"],
+        ["SW-01","Software","Standard-Softwarepaket installiert (Office, Browser, PDF)"],
+        ["SW-02","Software","Abteilungsspezifische Software installiert"],
+        ["NET-01","Netzwerk","LAN-Anschluss geprüft / WLAN-Zugang eingerichtet"],
+        ["NET-02","Netzwerk","Drucker- und Netzlaufwerk-Verbindungen eingerichtet"],
+        ["SEC-01","Sicherheit","Passwort-Richtlinie erklärt, Erstpasswort gesetzt"],
+        ["SEC-02","Sicherheit","Multi-Faktor-Authentifizierung aktiviert"],
+        ["DOC-01","Übergabe & Doku","Geräte-Übergabeprotokoll unterschrieben"],
+        ["DOC-02","Übergabe & Doku","Kurzeinweisung Helpdesk-Kontakt gegeben"],
+      ]
+    },
+    homeoffice: {
+      label: "Home-Office / Remote — Setup",
+      items: [
+        ["HW-01","Hardware","Notebook + Netzteil verschickt oder übergeben"],
+        ["HW-02","Hardware","Headset und ggf. zweiter Monitor bereitgestellt"],
+        ["ACC-01","Zugänge & Accounts","VPN-Zugang eingerichtet und getestet"],
+        ["ACC-02","Zugänge & Accounts","Remote-Desktop-/Cloud-Zugriff konfiguriert"],
+        ["SW-01","Software","Kollaborationstools installiert (Teams/Slack o. ä.)"],
+        ["SW-02","Software","Virenschutz und Endpoint-Security aktiv"],
+        ["NET-01","Netzwerk","Heimnetzwerk-Anforderungen mit Nutzer geprüft"],
+        ["SEC-01","Sicherheit","Multi-Faktor-Authentifizierung aktiviert"],
+        ["SEC-02","Sicherheit","Richtlinie zu Datenschutz im Home-Office besprochen"],
+        ["DOC-01","Übergabe & Doku","Erreichbarkeits- und Supportzeiten mitgeteilt"],
+        ["DOC-02","Übergabe & Doku","Rückgabemodalitäten für Hardware dokumentiert"],
+      ]
+    },
+    kiosk: {
+      label: "Kiosk- / Digital-Signage-Standort",
+      items: [
+        ["HW-01","Hardware","Display/Terminal montiert und mit Strom versorgt"],
+        ["HW-02","Hardware","Mini-PC / Player-Hardware installiert"],
+        ["NET-01","Netzwerk","Netzwerkanschluss vor Ort geprüft (LAN/4G-Backup)"],
+        ["NET-02","Netzwerk","Feste IP / Fernzugriff für Wartung eingerichtet"],
+        ["SW-01","Software","Kiosk-Betriebssystem aufgespielt und konfiguriert"],
+        ["SW-02","Software","Auto-Start und Wiederanlauf nach Stromausfall getestet"],
+        ["SEC-01","Sicherheit","Gehäuse/Zugang physisch gesichert"],
+        ["SEC-02","Sicherheit","Fernwartungszugang mit Passwortschutz versehen"],
+        ["DOC-01","Übergabe & Doku","Standort im Monitoring-System erfasst"],
+        ["DOC-02","Übergabe & Doku","Vor-Ort-Ansprechpartner und Wartungsintervall notiert"],
+      ]
+    },
+    filiale: {
+      label: "Filial-Rollout — mehrere Geräte",
+      items: [
+        ["HW-01","Hardware","Geräteliste mit Seriennummern erstellt"],
+        ["HW-02","Hardware","Alle Arbeitsplätze aufgebaut und verkabelt"],
+        ["HW-03","Hardware","Kassen-/POS-Systeme installiert (falls zutreffend)"],
+        ["NET-01","Netzwerk","Internetanbindung der Filiale getestet"],
+        ["NET-02","Netzwerk","WLAN-Abdeckung im gesamten Standort geprüft"],
+        ["ACC-01","Zugänge & Accounts","Sammel-Onboarding aller Mitarbeiter-Accounts"],
+        ["SW-01","Software","Standard-Image auf allen Geräten ausgerollt"],
+        ["SEC-01","Sicherheit","Firewall-/Sicherheitsregeln für Standort aktiv"],
+        ["DOC-01","Übergabe & Doku","Abnahmeprotokoll mit Filialleitung erstellt"],
+        ["DOC-02","Übergabe & Doku","Standort im zentralen Asset-Management erfasst"],
+        ["DOC-03","Übergabe & Doku","Eskalationsweg für lokale Störungen kommuniziert"],
+      ]
+    }
+  };
+
+  let state = [];
+
+  function loadScenario(){
+    const key = document.getElementById('scenarioSelect').value;
+    const s = scenarios[key];
+    state = s.items.map(([code,cat,text]) => ({code,cat,text,done:false,custom:false}));
+    document.getElementById('scenarioTitle').textContent = "// " + s.label.toLowerCase();
+    render();
+  }
+
+  function groupByCategory(items){
+    const groups = {};
+    items.forEach(it => {
+      if(!groups[it.cat]) groups[it.cat] = [];
+      groups[it.cat].push(it);
+    });
+    return groups;
+  }
+
+  function render(){
+    const container = document.getElementById('checklistContainer');
+    const groups = groupByCategory(state);
+    container.innerHTML = Object.entries(groups).map(([cat, items]) => `
+      <div class="panel rounded-sm p-5">
+        <p class="label mb-3">${cat}</p>
+        <div class="space-y-2.5">
+          ${items.map(it => `
+            <div class="flex items-start gap-3 ${it.done ? 'item-done' : ''}">
+              <input type="checkbox" ${it.done ? 'checked' : ''} data-code="${it.code}">
+              <span class="code shrink-0 mt-0.5">${it.code}</span>
+              <span class="item-text text-sm flex-1">${it.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const item = state.find(i => i.code === cb.dataset.code);
+        item.done = cb.checked;
+        updateProgress();
+        render();
+      });
+    });
+
+    updateProgress();
+  }
+
+  function updateProgress(){
+    const done = state.filter(i => i.done).length;
+    const total = state.length;
+    const pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById('progressText').textContent = `${done} / ${total} (${pct}%)`;
+    document.getElementById('progressBar').style.width = pct + '%';
+
+    const meta = `${document.getElementById('targetName').value || '—'} · Verantwortlich: ${document.getElementById('responsible').value || '—'} · ${document.getElementById('dateField').value || ''}`;
+    document.getElementById('printMeta').textContent = meta;
+  }
+
+  let customCounter = 1;
+  document.getElementById('addCustomBtn').addEventListener('click', () => {
+    const text = document.getElementById('customText').value.trim();
+    if(!text) return;
+    const cat = document.getElementById('customCategory').value;
+    state.push({code:`X-${customCounter++}`, cat, text, done:false, custom:true});
+    document.getElementById('customText').value = '';
+    render();
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', loadScenario);
+  document.getElementById('scenarioSelect').addEventListener('change', loadScenario);
+  document.getElementById('targetName').addEventListener('input', updateProgress);
+  document.getElementById('responsible').addEventListener('input', updateProgress);
+  document.getElementById('dateField').addEventListener('input', updateProgress);
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if(confirm('Alle Häkchen zurücksetzen?')){
+      state.forEach(i => i.done = false);
+      render();
+    }
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const groups = groupByCategory(state);
+    const target = document.getElementById('targetName').value || '—';
+    const resp = document.getElementById('responsible').value || '—';
+    const date = document.getElementById('dateField').value || '—';
+    const scenarioLabel = document.getElementById('scenarioTitle').textContent.replace('// ','');
+
+    let md = `# IT-Rollout-Checkliste\n\n`;
+    md += `**Typ:** ${scenarioLabel}\n**Name/Standort:** ${target}\n**Verantwortlich:** ${resp}\n**Datum:** ${date}\n\n`;
+    Object.entries(groups).forEach(([cat, items]) => {
+      md += `## ${cat}\n\n`;
+      items.forEach(it => {
+        md += `- [${it.done ? 'x' : ' '}] \`${it.code}\` ${it.text}\n`;
+      });
+      md += `\n`;
+    });
+    const done = state.filter(i=>i.done).length;
+    md += `---\n_Fortschritt: ${done} / ${state.length} erledigt_\n`;
+
+    const blob = new Blob([md], {type:'text/markdown'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rollout-checkliste-${(target||'export').replace(/\s+/g,'-').toLowerCase()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Init
+  document.getElementById('dateField').valueAsDate = new Date();
+  loadScenario();
+</script>
+
+</body>
+</html>
