@@ -3,274 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salvattore Seclen — IT Support & Rollout</title>
-<meta name="description" content="Salvattore Seclen — IT-Support, Helpdesk, Rollout-Technik. Kaufbeuren, Deutschland.">
-<script src="https://cdn.tailwindcss.com"></script>
+<title>Projekte — S. Seclen</title>
+<meta name="description" content="Zwei interaktive Web-Tools von Salvattore Seclen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0F1B24;
-    --surface: #152430;
-    --surface-2: #1B2E3B;
-    --line: #2A3F4D;
-    --amber: #E8A33D;
-    --green: #4FA382;
-    --text: #F2EFE9;
-    --muted: #93A7B0;
+    --bg:#F6F5F2;
+    --ink:#2B2E2C;
+    --muted:#7A8079;
+    --line:#DEDBD3;
+    --accent:#6E8B7A;
   }
-  *{ box-sizing: border-box; }
-  html{ scroll-behavior: smooth; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
   body{
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Sans', sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
   }
-  .mono{ font-family: 'IBM Plex Mono', monospace; }
-  .panel{
-    background: var(--surface);
-    border: 1px solid var(--line);
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:0 28px;
+    width:100%;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
   }
-  .panel-2{
-    background: var(--surface-2);
-    border: 1px solid var(--line);
+  .mark{
+    font-size:.72rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:40px 0 0;
   }
-  .label{
-    font-family: 'IBM Plex Mono', monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--amber);
-    font-size: 0.72rem;
+  h1{
+    font-size:clamp(1.6rem, 3vw, 2.1rem);
+    font-weight:500;
+    letter-spacing:-.01em;
+    margin:18px 0 4px;
+    color:var(--ink);
   }
-  .dot{
-    width: 8px; height: 8px; border-radius: 999px;
-    background: var(--green);
-    box-shadow: 0 0 0 3px rgba(79,163,130,0.18);
+  .sub{
+    color:var(--muted);
+    font-size:.95rem;
+    margin-bottom:48px;
+    max-width:32ch;
   }
-  .dot-amber{
-    background: var(--amber);
-    box-shadow: 0 0 0 3px rgba(232,163,61,0.18);
+  .links{
+    border-top:1px solid var(--line);
   }
-  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0.35} }
-  .blink{ animation: blink 2.4s ease-in-out infinite; }
-  .role-line::before{
-    content: "> ";
-    color: var(--amber);
+  .link-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding:28px 0;
+    border-bottom:1px solid var(--line);
+    text-decoration:none;
+    color:var(--ink);
+    transition:padding-left .2s ease, color .2s ease;
   }
-  a.btn{
-    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  .link-row:hover{
+    padding-left:6px;
+    color:var(--accent);
   }
-  a.btn:hover{ transform: translateY(-1px); }
-  a.btn:focus-visible, button:focus-visible, a:focus-visible{
-    outline: 2px solid var(--amber);
-    outline-offset: 3px;
+  .link-num{
+    font-size:.72rem;
+    color:var(--muted);
+    letter-spacing:.08em;
+    min-width:28px;
   }
-  .card:hover{ border-color: var(--amber); }
-  .scanline{
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.02) 0px,
-      rgba(255,255,255,0.02) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+  .link-main{ flex:1; }
+  .link-title{
+    font-size:1.15rem;
+    font-weight:500;
   }
-  @media (prefers-reduced-motion: reduce){
-    .blink{ animation: none; }
+  .link-desc{
+    font-size:.85rem;
+    color:var(--muted);
+    margin-top:4px;
+    line-height:1.4;
   }
+  .link-arrow{
+    font-size:1rem;
+    color:var(--muted);
+    transition:transform .2s ease;
+  }
+  .link-row:hover .link-arrow{
+    transform:translateX(3px);
+    color:var(--accent);
+  }
+  footer{
+    text-align:center;
+    padding:28px;
+    font-size:.75rem;
+    color:var(--muted);
+  }
+  footer a{
+    color:var(--muted);
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  footer a:hover{ color:var(--accent); }
+  a:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
 </style>
 </head>
-<body class="antialiased">
+<body>
 
-<!-- NAV -->
-<header class="sticky top-0 z-50 backdrop-blur bg-[#0F1B24]/90 border-b" style="border-color: var(--line);">
-  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2 mono text-sm">
-      <span class="dot blink"></span>
-      <span style="color: var(--text);">SALVATTORE<span style="color:var(--muted)">.SECLEN</span></span>
-    </div>
-    <nav class="hidden sm:flex gap-6 mono text-xs" style="color: var(--muted);">
-      <a href="#status" class="hover:text-white transition">status</a>
-      <a href="#kompetenzen" class="hover:text-white transition">kompetenzen</a>
-      <a href="#projekte" class="hover:text-white transition">projekte</a>
-      <a href="#kontakt" class="hover:text-white transition">kontakt</a>
-    </nav>
-    <a href="#kontakt" class="btn mono text-xs px-3 py-1.5 rounded-sm border" style="border-color: var(--amber); color: var(--amber);">kontakt →</a>
-  </div>
-</header>
+  <div class="wrap">
+    <p class="mark">Projekte</p>
+    <h1>Zwei Web-Tools</h1>
+    <p class="sub">Gebaut mit HTML, Tailwind CSS und JavaScript — ohne Frameworks.</p>
 
-<!-- HERO / STATUS PANEL -->
-<section id="status" class="max-w-5xl mx-auto px-6 pt-16 pb-12">
-  <div class="panel rounded-sm p-6 sm:p-10 relative overflow-hidden">
-    <div class="absolute inset-0 scanline pointer-events-none"></div>
-    <div class="relative">
-      <div class="flex items-center gap-2 mb-6">
-        <span class="dot blink"></span>
-        <span class="label">system status: bereit für einsatz</span>
-      </div>
+    <div class="links">
+      <a href="support-dashboard.html" class="link-row">
+        <span class="link-num">01</span>
+        <span class="link-main">
+          <span class="link-title">IT-Support-Dashboard</span>
+          <div class="link-desc">Ticket-Queue mit Filtern, Live-Suche und System-Monitoring</div>
+        </span>
+        <span class="link-arrow">→</span>
+      </a>
 
-      <h1 class="text-3xl sm:text-5xl font-semibold leading-tight mb-4" style="font-family:'IBM Plex Mono', monospace;">
-        Salvattore Seclen
-      </h1>
-
-      <div class="mono text-base sm:text-lg space-y-1 mb-8" style="color: var(--amber);">
-        <p class="role-line">1st-Level-Support / Helpdesk</p>
-        <p class="role-line">IT-Rollout-Techniker</p>
-        <p class="role-line" style="color: var(--muted);">Fachinformatiker für Systemintegration — <span style="color:var(--text)">in Ausbildung</span></p>
-      </div>
-
-      <p class="max-w-2xl mb-8 leading-relaxed" style="color: var(--muted);">
-        Nach Jahren mit echter Führungsverantwortung in Produktion, Logistik und Kundenservice
-        habe ich mich für eine Umschulung zum Fachinformatiker für Systemintegration entschieden.
-        Die praktische Ausbildung ist abgeschlossen — die AP2-Wiederholungsprüfung steht in
-        rund sechs Monaten an. Bis dahin bin ich sofort einsatzbereit für Helpdesk-,
-        Support- und Rollout-Aufgaben.
-      </p>
-
-      <div class="flex flex-wrap gap-3">
-        <a href="#kontakt" class="btn mono text-sm px-5 py-2.5 rounded-sm" style="background: var(--amber); color: #14202A; font-weight:600;">
-          Kontakt aufnehmen
-        </a>
-        <a href="#projekte" class="btn mono text-sm px-5 py-2.5 rounded-sm border" style="border-color: var(--line); color: var(--text);">
-          Projekte ansehen
-        </a>
-      </div>
+      <a href="rollout-checklist.html" class="link-row">
+        <span class="link-num">02</span>
+        <span class="link-main">
+          <span class="link-title">Rollout-Checklisten-Generator</span>
+          <div class="link-desc">Checklisten je Arbeitsplatz-Typ, exportierbar als Markdown</div>
+        </span>
+        <span class="link-arrow">→</span>
+      </a>
     </div>
   </div>
 
-  <!-- METRICS ROW -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-px mt-px" style="background: var(--line);">
-    <div class="panel-2 p-5">
-      <p class="label mb-1">standort</p>
-      <p class="mono text-lg">Kaufbeuren</p>
-      <p class="text-xs mt-1" style="color: var(--muted);">München · Augsburg · Kempten</p>
-    </div>
-    <div class="panel-2 p-5">
-      <p class="label mb-1">verfügbarkeit</p>
-      <p class="mono text-lg">sofort</p>
-      <p class="text-xs mt-1" style="color: var(--muted);">keine Visa-Sponsorship nötig</p>
-    </div>
-    <div class="panel-2 p-5">
-      <p class="label mb-1">sprachen</p>
-      <p class="mono text-lg">DE · EN · ES</p>
-      <p class="text-xs mt-1" style="color: var(--muted);">verhandlungssicher / native</p>
-    </div>
-    <div class="panel-2 p-5">
-      <p class="label mb-1">führungserfahrung</p>
-      <p class="mono text-lg">nachgewiesen</p>
-      <p class="text-xs mt-1" style="color: var(--muted);">Schicht- & Projektleitung</p>
-    </div>
-  </div>
-</section>
-
-<!-- KOMPETENZEN -->
-<section id="kompetenzen" class="max-w-5xl mx-auto px-6 py-16">
-  <div class="flex items-center gap-2 mb-8">
-    <span class="dot-amber dot"></span>
-    <p class="label">kompetenzen</p>
-  </div>
-
-  <div class="grid sm:grid-cols-2 gap-px" style="background: var(--line);">
-    <div class="panel-2 p-6">
-      <p class="mono text-sm mb-2" style="color: var(--amber);">technisch</p>
-      <ul class="space-y-2 text-sm" style="color: var(--text);">
-        <li>· 1st-Level-Support &amp; Ticket-Bearbeitung</li>
-        <li>· Rollout &amp; Inbetriebnahme von Hardware/Displays</li>
-        <li>· Linux-Basiswissen (AlmaLinux, Kiosk-Systeme)</li>
-        <li>· Netzwerk- &amp; Systemgrundlagen (Umschulung)</li>
-        <li>· Automatisierung mit n8n / KI-Workflows</li>
-        <li>· Vorbereitung auf AZ-900 (Azure Fundamentals)</li>
-      </ul>
-    </div>
-    <div class="panel-2 p-6">
-      <p class="mono text-sm mb-2" style="color: var(--green);">persönlich</p>
-      <ul class="space-y-2 text-sm" style="color: var(--text);">
-        <li>· Verantwortungsbewusstsein — bewiesen als Schicht- &amp; Projektleiter</li>
-        <li>· Strukturiertes Denken (Studium Kommunikationswissenschaften)</li>
-        <li>· Internationale Anpassungsfähigkeit (Peru, USA, Deutschland)</li>
-        <li>· Ruhiger, klarer Kommunikationsstil im Kundenkontakt</li>
-        <li>· Eigeninitiative über den Lehrplan hinaus</li>
-        <li>· Zuverlässigkeit unter Zeitdruck</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- PROJEKTE -->
-<section id="projekte" class="max-w-5xl mx-auto px-6 py-16">
-  <div class="flex items-center gap-2 mb-8">
-    <span class="dot-amber dot"></span>
-    <p class="label">projekte</p>
-  </div>
-
-  <div class="grid sm:grid-cols-2 gap-6">
-    <a href="https://github.com/SalvaSeclen/InfoPoints-Kiosk-System---Watchdog-" target="_blank" rel="noopener"
-       class="card panel rounded-sm p-6 block transition">
-      <div class="flex items-center justify-between mb-3">
-        <p class="mono text-xs" style="color: var(--muted);">projekt/01</p>
-        <span class="mono text-xs" style="color: var(--green);">● public</span>
-      </div>
-      <h3 class="text-lg font-semibold mb-2">InfoPoints — Linux-Kiosk-System</h3>
-      <p class="text-sm mb-4" style="color: var(--muted);">
-        Watchdog- &amp; Monitoring-System für Kiosk-Displays (AlmaLinux), inklusive
-        vollständigem Betriebshandbuch. Praxisprojekt der Umschulung.
-      </p>
-      <span class="mono text-xs" style="color: var(--amber);">GitHub ansehen →</span>
-    </a>
-
-    <div class="card panel rounded-sm p-6 opacity-80">
-      <div class="flex items-center justify-between mb-3">
-        <p class="mono text-xs" style="color: var(--muted);">projekt/02</p>
-        <span class="mono text-xs" style="color: var(--amber);">● repo folgt</span>
-      </div>
-      <h3 class="text-lg font-semibold mb-2">KI-gestützter Support-Workflow</h3>
-      <p class="text-sm mb-4" style="color: var(--muted);">
-        Automatisierte Ticket-Beantwortung per RAG-Ansatz mit n8n, Google Gemini
-        und MySQL. Repository wird in Kürze veröffentlicht.
-      </p>
-      <span class="mono text-xs" style="color: var(--muted);">Link folgt in Kürze</span>
-    </div>
-  </div>
-</section>
-
-<!-- KONTAKT -->
-<section id="kontakt" class="max-w-5xl mx-auto px-6 py-16">
-  <div class="panel rounded-sm p-8 sm:p-12 text-center relative overflow-hidden">
-    <div class="absolute inset-0 scanline pointer-events-none"></div>
-    <div class="relative">
-      <div class="flex items-center justify-center gap-2 mb-4">
-        <span class="dot blink"></span>
-        <p class="label">bereit für den nächsten schritt</p>
-      </div>
-      <h2 class="text-2xl sm:text-3xl font-semibold mb-4" style="font-family:'IBM Plex Mono', monospace;">
-        Kontakt aufnehmen
-      </h2>
-      <p class="max-w-md mx-auto mb-8 text-sm" style="color: var(--muted);">
-        Offen für Gespräche über Helpdesk-, Support- und Rollout-Positionen
-        in München, Augsburg, Kempten und Umgebung.
-      </p>
-      <div class="flex flex-wrap justify-center gap-3">
-        <a href="mailto:salvaseclen@gmail.com" class="btn mono text-sm px-5 py-2.5 rounded-sm" style="background: var(--amber); color:#14202A; font-weight:600;">
-          ✉ salvaseclen@gmail.com
-        </a>
-        <a href="https://www.xing.com/profile/Salvattore_Seclen" target="_blank" rel="noopener" class="btn mono text-sm px-5 py-2.5 rounded-sm border" style="border-color: var(--line); color: var(--text);">
-          Xing-Profil
-        </a>
-        <a href="https://github.com/SalvaSeclen" target="_blank" rel="noopener" class="btn mono text-sm px-5 py-2.5 rounded-sm border" style="border-color: var(--line); color: var(--text);">
-          GitHub
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer class="max-w-5xl mx-auto px-6 pb-10">
-  <div class="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-2 text-xs mono" style="border-color: var(--line); color: var(--muted);">
-    <span>© 2026 Salvattore Seclen · Kaufbeuren, Deutschland</span>
-    <span>zuletzt aktualisiert: Juli 2026</span>
-  </div>
-</footer>
+  <footer>
+    <a href="mailto:salvaseclen@gmail.com">salvaseclen@gmail.com</a>
+  </footer>
 
 </body>
 </html>
