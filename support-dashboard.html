@@ -54,7 +54,7 @@
     </div>
     <div class="flex items-center gap-3">
       <span class="mono text-xs hidden sm:block" style="color:var(--muted);" id="clock"></span>
-      <button class="mono text-xs px-3 py-1.5 rounded-sm" style="background:var(--cyan); color:#06121F; font-weight:600;">+ Neues Ticket</button>
+      <button id="newTicketBtn" onclick="openTicketForm()" class="mono text-xs px-3 py-1.5 rounded-sm" style="background:var(--cyan); color:#06121F; font-weight:600;">+ Neues Ticket</button>
     </div>
   </div>
 </header>
@@ -132,8 +132,8 @@
       <p class="mono text-xs mb-1" style="color:var(--cyan);">// Über diese Demo</p>
       <p class="text-sm" style="color:var(--muted);">
         Fiktives Support-Dashboard, gebaut als Portfolio-Projekt — HTML, Tailwind CSS und
-        Vanilla JavaScript, keine externen Frameworks. Ticket-Queue und Filter sind voll
-        funktional (Stichprobe aus 12 Demo-Tickets).
+        Vanilla JavaScript, keine externen Frameworks. Ticket-Queue, Suche, Filter und
+        Ticket-Erstellung sind funktional (12 Demo-Tickets; neue Tickets werden nicht gespeichert).
       </p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -147,6 +147,35 @@
   </p>
 
 </main>
+
+<!-- NEUES TICKET (FORMULAR) -->
+<div id="ticketModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,.6);">
+  <div class="panel rounded-sm p-5 w-full max-w-md">
+    <p class="font-semibold mb-4">Neues Ticket erstellen</p>
+
+    <label class="text-xs block mb-1" style="color:var(--muted);" for="newSubject">Betreff</label>
+    <input id="newSubject" type="text" placeholder="z. B. Laptop startet nicht"
+      class="w-full bg-transparent border rounded-sm px-3 py-2 text-sm mb-3 focus:outline-none" style="border-color:var(--line); color:var(--text);">
+
+    <label class="text-xs block mb-1" style="color:var(--muted);" for="newRequester">Gemeldet von</label>
+    <input id="newRequester" type="text" placeholder="z. B. K. Weber"
+      class="w-full bg-transparent border rounded-sm px-3 py-2 text-sm mb-3 focus:outline-none" style="border-color:var(--line); color:var(--text);">
+
+    <label class="text-xs block mb-1" style="color:var(--muted);" for="newPriority">Priorität</label>
+    <select id="newPriority" class="w-full border rounded-sm px-3 py-2 text-sm mb-2 focus:outline-none" style="border-color:var(--line); color:var(--text); background:var(--panel2);">
+      <option value="Hoch">Hoch</option>
+      <option value="Mittel" selected>Mittel</option>
+      <option value="Niedrig">Niedrig</option>
+    </select>
+
+    <p id="formError" class="text-xs mb-2 hidden" style="color:var(--red);">Bitte Betreff und Namen ausfüllen.</p>
+
+    <div class="flex justify-end gap-2 mt-3">
+      <button onclick="closeTicketForm()" class="mono text-xs px-3 py-1.5 rounded-sm border" style="border-color:var(--line); color:var(--text);">Abbrechen</button>
+      <button onclick="saveTicket()" class="mono text-xs px-3 py-1.5 rounded-sm" style="background:var(--cyan); color:#06121F; font-weight:600;">Ticket erstellen</button>
+    </div>
+  </div>
+</div>
 
 <script>
   // ---- Uhr ----
@@ -180,6 +209,11 @@
 
   let currentFilter = 'alle';
 
+  // Schützt vor HTML-Code in Benutzereingaben
+  function escapeHtml(text){
+    return text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   function renderTickets(){
     const search = document.getElementById('searchInput').value.toLowerCase();
     const body = document.getElementById('ticketBody');
@@ -192,7 +226,7 @@
     body.innerHTML = filtered.map(t => `
       <tr class="ticket-row border-b" style="border-color:var(--line);">
         <td class="py-2.5 pr-3 mono text-xs" style="color:var(--muted);">${t.id}</td>
-        <td class="py-2.5 pr-3">${t.subject}<br><span class="text-xs" style="color:var(--muted);">${t.requester}</span></td>
+        <td class="py-2.5 pr-3">${escapeHtml(t.subject)}<br><span class="text-xs" style="color:var(--muted);">${escapeHtml(t.requester)}</span></td>
         <td class="py-2.5 pr-3">
           <span class="mono text-xs" style="color:${priorityColor[t.priority]};">${t.priority}</span>
         </td>
@@ -218,6 +252,46 @@
   });
 
   renderTickets();
+
+  // ---- Neues Ticket ----
+  const modal = document.getElementById('ticketModal');
+
+  function openTicketForm(){
+    document.getElementById('newSubject').value = '';
+    document.getElementById('newRequester').value = '';
+    document.getElementById('newPriority').value = 'Mittel';
+    document.getElementById('formError').classList.add('hidden');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('newSubject').focus();
+  }
+
+  function closeTicketForm(){
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function saveTicket(){
+    const subject = document.getElementById('newSubject').value.trim();
+    const requester = document.getElementById('newRequester').value.trim();
+    const priority = document.getElementById('newPriority').value;
+
+    if (!subject || !requester){
+      document.getElementById('formError').classList.remove('hidden');
+      return;
+    }
+
+    // Neue ID = höchste vorhandene ID + 1
+    const maxId = Math.max(...tickets.map(t => parseInt(t.id.replace('#',''))));
+    tickets.unshift({ id:'#' + (maxId + 1), subject, requester, priority, status:'Neu', created:'gerade eben' });
+
+    closeTicketForm();
+    renderTickets();
+  }
+
+  // Esc schließt das Formular, Klick auf den dunklen Hintergrund auch
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTicketForm(); });
+  modal.addEventListener('click', e => { if (e.target === modal) closeTicketForm(); });
 
   // ---- System-Status ----
   const systems = [
